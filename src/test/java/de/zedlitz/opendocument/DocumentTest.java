@@ -1,11 +1,14 @@
 package de.zedlitz.opendocument;
 
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.util.zip.ZipFile;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * @author jzedlitz
- * 
  */
 public class DocumentTest extends AbstractBaseTest {
 
@@ -25,54 +28,59 @@ public class DocumentTest extends AbstractBaseTest {
             + "</table:table><table:table table:name=\"Tabelle2\" table:style-name=\"ta1\" table:print=\"false\"/>"
             + "</office:spreadsheet></office:body></office:document-content>";
 
+    @Test
     public void testEmptyTable() throws Exception {
         final Document doc = new Document(this
                 .createParser(CONTENT_ONE_EMPTY_TABLE));
-        assertNotNull("one table", doc.nextTable());
-        assertNull("no second table", doc.nextTable());
-        assertNull("no second table", doc.nextTable());
+        assertNotNull(doc.nextTable(), "one table");
+        assertNull(doc.nextTable(), "no second table");
+        assertNull(doc.nextTable(), "no second table");
     }
 
+    @Test
     public void testEmptyTableCheckRows() throws Exception {
         final Document doc = new Document(this
                 .createParser(CONTENT_ONE_EMPTY_TABLE));
         final Table tab = doc.nextTable();
-        assertNotNull("one table", tab);
-        assertNull("no row", tab.nextRow());
-        assertNull("no second table", doc.nextTable());
+        assertNotNull(tab, "one table");
+        assertNull(tab.nextRow(), "no row");
+        assertNull(doc.nextTable(), "no second table");
     }
 
+    @Test
     public void testSkipRows() throws Exception {
         final Document doc = new Document(this
                 .createParser(CONTENT_ONE_TWO_ROWS));
 
         final Table tab1 = doc.nextTable();
-        assertNotNull("1st table", tab1);
-        assertEquals("1st table correct name", "Tabelle1", tab1.getName());
+        assertNotNull(tab1, "1st table");
+        assertEquals("Tabelle1", tab1.getName(), "1st table correct name");
 
         final Table tab2 = doc.nextTable();
-        assertNotNull("2nd table", tab2);
-        assertEquals("2nd table correct name", "Tabelle2", tab2.getName());
+        assertNotNull(tab2, "2nd table");
+        assertEquals("Tabelle2", tab2.getName(), "2nd table correct name");
     }
 
+    @Test
     public void testReadRows() throws Exception {
         final Document doc = new Document(this
                 .createParser(CONTENT_ONE_TWO_ROWS));
 
         final Table tab1 = doc.nextTable();
-        assertNotNull("1st table", tab1);
-        assertEquals("1st table correct name", "Tabelle1", tab1.getName());
+        assertNotNull(tab1, "1st table");
+        assertEquals("Tabelle1", tab1.getName(), "1st table correct name");
 
-        assertNotNull("1st row ok", tab1.nextRow());
-        assertNotNull("2nd row", tab1.nextRow());
-        assertNull("no 3rd row", tab1.nextRow());
-        assertNull("no 4th row", tab1.nextRow());
+        assertNotNull(tab1.nextRow(), "1st row ok");
+        assertNotNull(tab1.nextRow(), "2nd row");
+        assertNull(tab1.nextRow(), "no 3rd row");
+        assertNull(tab1.nextRow(), "no 4th row");
 
         final Table tab2 = doc.nextTable();
-        assertNotNull("2nd table", tab2);
-        assertEquals("2nd table correct name", "Tabelle2", tab2.getName());
+        assertNotNull(tab2, "2nd table");
+        assertEquals("Tabelle2", tab2.getName(), "2nd table correct name");
     }
 
+    @Test
     public void testRealDocument() throws Exception, IOException {
         final ZipFile file = new ZipFile(getClass().getResource("/test01.ods")
                 .getFile());
@@ -80,59 +88,56 @@ public class DocumentTest extends AbstractBaseTest {
         final Document doc = new Document(file);
 
         final Table table1 = doc.nextTable();
-        assertNotNull("1st table exits", table1);
-        assertEquals("correct name", "Tabelle1", table1.getName());
+        assertNotNull(table1, "1st table exits");
+        assertEquals("Tabelle1", table1.getName(), "correct name");
         final Row row1 = table1.nextRow();
-        assertNotNull("1st row", row1);
-        checkRow(new String[] { "A1", "b1", "c1", "d1", "e1", "f1" }, row1);
+        assertNotNull(row1, "1st row");
+        checkRow(new String[]{"A1", "b1", "c1", "d1", "e1", "f1"}, row1);
 
         final Row row2 = table1.nextRow();
-        assertNotNull("2nd row", row2);
-        checkRow(new String[] { "2", "b2", "", "", "e2", "" }, row2);
+        assertNotNull(row2, "2nd row");
+        checkRow(new String[]{"2", "b2", "", "", "e2", ""}, row2);
 
         final Row row3 = table1.nextRow();
-        assertNotNull("3rd row", row3);
-        checkRow(new String[] { "3", "4", "c3", "", "", "f3" }, row3);
+        assertNotNull(row3, "3rd row");
+        checkRow(new String[]{"3", "4", "c3", "", "", "f3"}, row3);
 
         final Row row4 = table1.nextRow();
-        assertNotNull("4th row", row4);
-        checkRow(new String[] { "", "b4", "", "", "", "" }, row4);
+        assertNotNull(row4, "4th row");
+        checkRow(new String[]{"", "b4", "", "", "", ""}, row4);
 
-        assertNull("no 5th row", table1.nextRow());
+        assertNull(table1.nextRow(), "no 5th row");
 
         final Table table2 = doc.nextTable();
-        assertNotNull("2nd table exits", table2);
-        assertEquals("correct name", "Tabelle2", table2.getName());
-        assertNotNull("1st row", table2.nextRow());
-        assertNull("no 2nd row", table2.nextRow());
+        assertNotNull(table2, "2nd table exits");
+        assertEquals("Tabelle2", table2.getName(), "correct name");
+        assertNotNull(table2.nextRow(), "1st row");
+        assertNull(table2.nextRow(), "no 2nd row");
 
         final Table table3 = doc.nextTable();
-        assertNotNull("3rd table exits", table3);
-        assertEquals("correct name", "Tabelle3", table3.getName());
-        assertNotNull("1st row", table3.nextRow());
-        assertNull("no 2nd row", table3.nextRow());
+        assertNotNull(table3, "3rd table exits");
+        assertEquals("Tabelle3", table3.getName(), "correct name");
+        assertNotNull(table3.nextRow(), "1st row");
+        assertNull(table3.nextRow(), "no 2nd row");
 
-        assertNull("no 4th table", doc.nextTable());
+        assertNull(doc.nextTable(), "no 4th table");
     }
 
+    @Test
     public void testRealDocumentInputStream() throws Exception,
             IOException {
         final Document doc = new Document(getClass()
                 .getResourceAsStream("/test01.ods"));
         final Table table1 = doc.nextTable();
-        assertNotNull("1st table exits", table1);
-        assertEquals("correct name", "Tabelle1", table1.getName());
+        assertNotNull(table1, "1st table exits");
+        assertEquals("Tabelle1", table1.getName(), "correct name");
     }
 
-    /**
-     * @param content
-     * @param row1
-     */
     private void checkRow(final String[] content, final Row row) {
-        for (int i = 0; i < content.length; i++) {
+        for (String s : content) {
             final Cell cell = row.nextCell();
-            assertNotNull("cell not null", cell);
-            assertEquals("correct content", content[i], cell.getContent());
+            assertNotNull(cell, "cell not null");
+            assertEquals(s, cell.getContent(), "correct content");
         }
 
     }

@@ -4,7 +4,7 @@
   <groupId>de.zedlitz</groupId>
   <name>OpenDocument reader</name>
   <artifactId>opendocument-reader</artifactId>
-  <version>0.3-SNAPSHOT</version>
+  <version>1.0</version>
   <description>streaming reader for OpenDocument files</description>
   <scm>
     <connection>scm:svn:https://github.com/jze/opendocument-reader/trunk/</connection>
@@ -14,10 +14,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
         <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
+          <source>1.8</source>
+          <target>1.8</target>
         </configuration>
       </plugin>
       <plugin>
@@ -46,18 +45,12 @@
     <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.3</version>
+      <version>2.6</version>
     </dependency>
     <dependency>
-      <groupId>groovy</groupId>
-      <artifactId>groovy-all-minimal</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.2</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

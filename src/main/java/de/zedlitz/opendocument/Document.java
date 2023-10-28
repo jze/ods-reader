@@ -1,25 +1,21 @@
 package de.zedlitz.opendocument;
 
-import groovy.lang.Closure;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.function.Consumer;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 
 /**
  * An OpenDocument spreadsheet document.
  *
  * @author jzedlitz
- *
  */
 public class Document {
     /**
@@ -30,21 +26,13 @@ public class Document {
     /**
      * Namespace urn:oasis:names:tc:opendocument:xmlns:office:1.0
      */
-    static String NS_OFFICE =
-        "urn:oasis:names:tc:opendocument:xmlns:office:1.0";
+    static String NS_OFFICE = "urn:oasis:names:tc:opendocument:xmlns:office:1.0";
 
-    /**
-     * Return the next {@link Table} object of <code>null</code> if no more
-     * tables exist.
-     *
-     * @return a {@link Table} object of <code>null</code> if no more tables
-     *         exist.
-     */
     private final XMLStreamReaderWithDepth xpp;
     private int depth;
 
     public Document(final String filename)
-        throws XMLStreamException, IOException {
+            throws XMLStreamException, IOException {
         this(new ZipFile(filename));
     }
 
@@ -56,11 +44,11 @@ public class Document {
         final XMLInputFactory factory = XMLInputFactory.newInstance();
         final ZipEntry content = file.getEntry("content.xml");
         this.xpp = new XMLStreamReaderWithDepth(factory.createXMLStreamReader(
-                    file.getInputStream(content)));
+                file.getInputStream(content)));
     }
 
     public Document(final InputStream inputStream)
-        throws XMLStreamException, IOException {
+            throws XMLStreamException, IOException {
         final XMLInputFactory factory = XMLInputFactory.newInstance();
 
         final ZipInputStream zipInputStream = new ZipInputStream(inputStream);
@@ -77,7 +65,7 @@ public class Document {
         }
 
         this.xpp = new XMLStreamReaderWithDepth(factory.createXMLStreamReader(
-                    zipInputStream));
+                zipInputStream));
     }
 
     public Document(final XMLStreamReaderWithDepth parser) {
@@ -85,9 +73,6 @@ public class Document {
         this.depth = parser.getDepth();
     }
 
-    /**
-     * @see de.freenet.jzedlitz.oo.Document#nextTable()
-     */
     public final Table nextTable() {
         Table result = null;
 
@@ -117,14 +102,11 @@ public class Document {
         return result;
     }
 
-    /**
-      * @see de.zedlitz.opendocument.Document#eachTable(groovy.lang.Closure)
-      */
-    public void eachTable(final Closure c) {
+    public void eachTable(final Consumer<Table> c) {
         Table nextTable = this.nextTable();
 
         while (nextTable != null) {
-            c.call(nextTable);
+            c.accept(nextTable);
             nextTable = this.nextTable();
         }
     }

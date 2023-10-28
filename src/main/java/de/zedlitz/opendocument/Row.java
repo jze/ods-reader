@@ -1,20 +1,17 @@
 package de.zedlitz.opendocument;
 
-import groovy.lang.Closure;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 
 /**
  * A row in an OpenDocument table.
  *
  * @author jzedlitz
- *
  */
 public class Row {
     /**
@@ -23,20 +20,14 @@ public class Row {
     static final QName ELEMENT_ROW = new QName(Document.NS_TABLE, "table-row");
     private final XMLStreamReaderWithDepth xpp;
     private final int depth;
-    private int emptyCells;
     List<Cell> allCells = null;
+    private int emptyCells;
 
-    /**
-     * @param xpp
-     */
     public Row(final XMLStreamReaderWithDepth xpp) {
         this.xpp = xpp;
         this.depth = xpp.getDepth();
     }
 
-    /**
-     * @see de.freenet.jzedlitz.oo.Row#nextCell()
-     */
     public Cell nextCell() {
         Cell result = null;
 
@@ -48,17 +39,12 @@ public class Row {
             try {
                 int eventType = xpp.getEventType();
 
-                while (!((eventType == XMLStreamConstants.END_ELEMENT) &&
-                        Row.ELEMENT_ROW.equals(xpp.getName())) &&
-                        (eventType != XMLStreamConstants.END_DOCUMENT) &&
-                        (xpp.getDepth() >= depth)) {
-                    if ((eventType == XMLStreamConstants.START_ELEMENT) &&
-                            Cell.ELEMENT_CELL.equals(xpp.getName())) {
+                while (!((eventType == XMLStreamConstants.END_ELEMENT) && Row.ELEMENT_ROW.equals(xpp.getName())) && (eventType != XMLStreamConstants.END_DOCUMENT) && (xpp.getDepth() >= depth)) {
+                    if ((eventType == XMLStreamConstants.START_ELEMENT) && Cell.ELEMENT_CELL.equals(xpp.getName())) {
                         final Cell myCell = new Cell(xpp);
 
                         if (myCell.getNumberColumnsRepeated() > 1) {
-                            this.emptyCells = myCell.getNumberColumnsRepeated() -
-                                1;
+                            this.emptyCells = myCell.getNumberColumnsRepeated() - 1;
                         }
 
                         result = myCell;
@@ -81,7 +67,7 @@ public class Row {
     Cell getAt(final int i) {
         // switch to memory mode
         if (allCells == null) {
-            allCells = new ArrayList<Cell>();
+            allCells = new ArrayList<>();
             Cell nextCell = this.nextCell();
 
             while (nextCell != null) {
@@ -93,14 +79,11 @@ public class Row {
         return allCells.get(i);
     }
 
-    /**
-      * @see de.zedlitz.opendocument.Row#eachCell(groovy.lang.Closure)
-      */
-    public void eachCell(final Closure c) {
+    public void eachCell(final Consumer<Cell> c) {
         Cell nextCell = this.nextCell();
 
         while (nextCell != null) {
-            c.call(nextCell);
+            c.accept(nextCell);
             nextCell = this.nextCell();
         }
     }

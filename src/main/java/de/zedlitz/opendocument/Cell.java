@@ -14,34 +14,30 @@ import javax.xml.stream.XMLStreamReader;
 
 /**
  * @author Jesper Zedlitz &lt;jze@informatik.uni-kiel.de&gt;
- *
  */
 public class Cell {
     protected final static String TYPE_UNDEFINED = "undefined";
     final static QName ELEMENT_CELL =
-        new QName(Document.NS_TABLE, "table-cell");
+            new QName(Document.NS_TABLE, "table-cell");
     private final static QName ELEMENT_ANNOTATION =
-        new QName(Document.NS_OFFICE, "annotation");
+            new QName(Document.NS_OFFICE, "annotation");
     private final static String ATTRIBUTE_VALUE_TYPE = "value-type";
     private final static String ATTRIBUTE_NUMBER_COLUMNS_REPEATED =
-        "number-columns-repeated";
-    private String valueType;
+            "number-columns-repeated";
     private final StringBuffer content = new StringBuffer();
+    private String valueType;
     private int numberColumnsRepeated;
 
-    /**
-     * @param parser
-     */
     Cell(final XMLStreamReader parser) {
         if (parser == null) {
             return;
         }
 
         this.valueType = StringUtils.defaultIfEmpty(parser.getAttributeValue(
-                    Document.NS_OFFICE, Cell.ATTRIBUTE_VALUE_TYPE),
+                        Document.NS_OFFICE, Cell.ATTRIBUTE_VALUE_TYPE),
                 Cell.TYPE_UNDEFINED);
         this.numberColumnsRepeated = NumberUtils.toInt(parser.getAttributeValue(
-                    Document.NS_TABLE, Cell.ATTRIBUTE_NUMBER_COLUMNS_REPEATED));
+                Document.NS_TABLE, Cell.ATTRIBUTE_NUMBER_COLUMNS_REPEATED));
 
         /*
          * extract content
@@ -67,13 +63,8 @@ public class Cell {
         }
     }
 
-    /**
-     * @param parser
-     * @throws XmlPullParserException
-     * @throws IOException
-     */
     private void skipNote(final XMLStreamReader parser)
-        throws XMLStreamException {
+            throws XMLStreamException {
         int eventType = parser.getEventType();
 
         while (!((eventType == XMLStreamConstants.END_ELEMENT) &&
@@ -101,8 +92,8 @@ public class Cell {
     }
 
     /**
-      * @see java.lang.Object#toString()
-      */
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return getContent();

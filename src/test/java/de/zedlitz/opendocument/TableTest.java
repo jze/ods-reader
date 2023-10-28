@@ -1,50 +1,55 @@
 package de.zedlitz.opendocument;
 
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author jzedlitz
- *
  */
 public class TableTest extends AbstractBaseTest {
     private static final String CONTENT_EMPTY_TABLE =
-        "<table:table xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
-        " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">" +
-        "</table:table>";
+            "<table:table xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
+                    " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">" +
+                    "</table:table>";
     private static final String CONTENT_TWO_EMPTY_ROWS =
-        "<table:table xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
-        " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">" +
-        "<table:table-row/><table:table-row/>" + "</table:table>";
+            "<table:table xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
+                    " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">" +
+                    "<table:table-row/><table:table-row/>" + "</table:table>";
 
+    @Test
     public void testEmptyTable() throws Exception {
         final Table table =
-            new Table(advanceToStartTag(createParser(CONTENT_EMPTY_TABLE)));
-        assertEquals("table has a name", "Tabelle1", table.getName());
-        assertNull("table has no row", table.nextRow());
-        assertNull("second call ok", table.nextRow());
+                new Table(advanceToStartTag(createParser(CONTENT_EMPTY_TABLE)));
+        assertEquals("Tabelle1", table.getName(), "table has a name");
+        assertNull(table.nextRow(), "table has no row");
+        assertNull(table.nextRow(), "second call ok");
     }
 
+    @Test
     public void testTwoEmptyRows() throws Exception {
         final Table table =
-            new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
-        assertNotNull("1st row ok", table.nextRow());
-        assertNotNull("2nd row ok", table.nextRow());
-        assertNull("no 3rd row", table.nextRow());
+                new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
+        assertNotNull(table.nextRow(), "1st row ok");
+        assertNotNull(table.nextRow(), "2nd row ok");
+        assertNull(table.nextRow(), "no 3rd row");
     }
 
+    @Test
     public void testTwoEmptyRowsCheckCells() throws Exception {
         final Table table =
-            new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
+                new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
 
         final Row row1 = table.nextRow();
-        assertNotNull("1st row ok", row1);
-        assertNull("no cell in 1st row", row1.nextCell());
-        assertNull("second call ok", row1.nextCell());
+        assertNotNull(row1, "1st row ok");
+        assertNull(row1.nextCell(), "no cell in 1st row");
+        assertNull(row1.nextCell(), "second call ok");
 
         final Row row2 = table.nextRow();
-        assertNotNull("2nd row ok", row2);
-        assertNull("no cell in 2nd row", row2.nextCell());
-        assertNull("second call ok", row2.nextCell());
+        assertNotNull(row2, "2nd row ok");
+        assertNull(row2.nextCell(), "no cell in 2nd row");
+        assertNull(row2.nextCell(), "second call ok");
 
-        assertNull("no 3rd row", table.nextRow());
+        assertNull(table.nextRow(), "no 3rd row");
     }
 }

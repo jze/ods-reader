@@ -15,15 +15,11 @@ import javax.xml.stream.XMLStreamReader;
  * Wrapper for {@link XMLStreamReader} that counts the depth of elements.
  *
  * @author jesper
- *
  */
 public class XMLStreamReaderWithDepth implements XMLStreamReader {
-    private XMLStreamReader internalReader;
+    private final XMLStreamReader internalReader;
     private int depth = 0;
 
-    /**
-     *
-     */
     public XMLStreamReaderWithDepth(final XMLStreamReader reader) {
         this.internalReader = reader;
     }
@@ -60,8 +56,7 @@ public class XMLStreamReaderWithDepth implements XMLStreamReader {
         return internalReader.getAttributeValue(index);
     }
 
-    public String getAttributeValue(final String namespaceURI,
-        final String localName) {
+    public String getAttributeValue(final String namespaceURI, final String localName) {
         return internalReader.getAttributeValue(namespaceURI, localName);
     }
 
@@ -129,8 +124,7 @@ public class XMLStreamReaderWithDepth implements XMLStreamReader {
         return internalReader.getPrefix();
     }
 
-    public Object getProperty(final String name)
-        throws IllegalArgumentException {
+    public Object getProperty(final String name) throws IllegalArgumentException {
         return internalReader.getProperty(name);
     }
 
@@ -142,10 +136,8 @@ public class XMLStreamReaderWithDepth implements XMLStreamReader {
         return internalReader.getTextCharacters();
     }
 
-    public int getTextCharacters(final int sourceStart, final char[] target,
-        final int targetStart, final int length) throws XMLStreamException {
-        return internalReader.getTextCharacters(sourceStart, target,
-            targetStart, length);
+    public int getTextCharacters(final int sourceStart, final char[] target, final int targetStart, final int length) throws XMLStreamException {
+        return internalReader.getTextCharacters(sourceStart, target, targetStart, length);
     }
 
     public int getTextLength() {
@@ -228,8 +220,7 @@ public class XMLStreamReaderWithDepth implements XMLStreamReader {
         return eventType;
     }
 
-    public void require(final int type, final String namespaceURI,
-        final String localName) throws XMLStreamException {
+    public void require(final int type, final String namespaceURI, final String localName) throws XMLStreamException {
         internalReader.require(type, namespaceURI, localName);
     }
 
