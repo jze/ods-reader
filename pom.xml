@@ -4,7 +4,7 @@
   <groupId>de.zedlitz</groupId>
   <name>OpenDocument reader</name>
   <artifactId>opendocument-reader</artifactId>
-  <version>1.0</version>
+  <version>1.1</version>
   <description>streaming reader for OpenDocument files</description>
   <url>https://github.com/jze/opendocument-reader</url>
   <properties>

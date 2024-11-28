@@ -3,6 +3,7 @@
  */
 package de.zedlitz.opendocument;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 
@@ -10,6 +11,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.time.LocalDateTime;
 
 
 /**
@@ -97,4 +99,25 @@ public class Cell {
     public String toString() {
         return getContent();
     }
+
+    public CellType getType() {
+        throw new NotImplementedException();
+    }
+
+    public LocalDateTime asDate() {
+        throw new NotImplementedException();
+    }
+
+    public String getDataFormatString() {
+        throw new NotImplementedException();
+    }
+
+    public Object getValue() {
+        throw new NotImplementedException();
+    }
+
+    public String getRawValue() {
+        return getContent();
+    }
+
 }

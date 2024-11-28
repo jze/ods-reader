@@ -7,6 +7,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -105,5 +106,18 @@ public class Document {
             c.accept(nextTable);
             nextTable = this.nextTable();
         }
+    }
+
+    public Optional<Sheet> getSheet(int i) {
+        int count = 0;
+        Table nextTable = this.nextTable();
+        while (nextTable != null) {
+            if (count == i) {
+                return Optional.of(nextTable);
+            }
+            count++;
+            nextTable = this.nextTable();
+        }
+        return Optional.empty();
     }
 }

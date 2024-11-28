@@ -5,6 +5,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -14,7 +15,7 @@ import java.util.function.Consumer;
  *
  * @author jzedlitz
  */
-public class Row {
+public class Row implements Iterable<Cell> {
     /**
      * Element name "table-row"
      */
@@ -46,7 +47,7 @@ public class Row {
             try {
                 int eventType = xpp.getEventType();
 
-                while (!isRowEndElement(eventType) ) {
+                while (!isRowEndElement(eventType)) {
                     if (isCellStartElement(eventType)) {
                         final Cell myCell = new Cell(xpp);
 
@@ -92,5 +93,10 @@ public class Row {
             c.accept(nextCell);
             nextCell = this.nextCell();
         }
+    }
+
+    @Override
+    public Iterator<Cell> iterator() {
+        return new CellIterator(this);
     }
 }

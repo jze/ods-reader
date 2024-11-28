@@ -4,7 +4,11 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.util.Iterator;
+import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -12,7 +16,7 @@ import java.util.function.Consumer;
  *
  * @author jzedlitz
  */
-public class Table {
+public class Table implements Sheet, Iterable<Row> {
     static final QName ELEMENT_TABLE = new QName(Document.NS_TABLE, "table");
     private static final String ATTRIBUTE_NAME = "name";
     private final XMLStreamReader xpp;
@@ -88,4 +92,20 @@ public class Table {
             nextRow = this.nextRow();
         }
     }
+
+    public Stream<Row> openStream() {
+        Iterator<Row> iterator = new RowIterator(this);
+
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator, 0),
+                false
+        );
+    }
+
+    @Override
+    public Iterator<Row> iterator() {
+        return new RowIterator(this);
+    }
+
+
 }

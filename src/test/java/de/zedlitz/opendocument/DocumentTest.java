@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -173,14 +174,43 @@ public class DocumentTest extends AbstractBaseTest {
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
-        final Document doc = new Document(this                .createParser(BROKEN_XML));
+        final Document doc = new Document(this.createParser(BROKEN_XML));
         Table table = doc.nextTable();
-
 
         System.setErr(originalErr);
 
         assertNull(table);
         assertTrue(errContent.toString().contains("XMLStreamException"));
+    }
+
+    @Test
+    public void getSheet_first() throws XMLStreamException, IOException {
+        File file = new File(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
+        final Document doc = new Document(file);
+        Optional<Sheet> sheet = doc.getSheet(0);
+        assertTrue(sheet.isPresent());
+        assertEquals("Tabelle1", sheet.get().getName(), "correct name");
+    }
+
+    @Test
+    public void getSheet_second() throws XMLStreamException, IOException {
+        File file = new File(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
+        final Document doc = new Document(file);
+        Optional<Sheet> sheet = doc.getSheet(1);
+        assertTrue(sheet.isPresent());
+        assertEquals("Tabelle2", sheet.get().getName(), "correct name");
+    }
+
+    /**
+     * If the document does not have so many sheets an {@link IndexOutOfBoundsException} will be thrown.
+     */
+    @Test
+    public void getSheet_notExisting() throws XMLStreamException, IOException {
+        File file = new File(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
+        final Document doc = new Document(file);
+
+        Optional<Sheet> sheet = doc.getSheet(5);
+        assertFalse(sheet.isPresent());
     }
 
 }
