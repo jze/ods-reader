@@ -1,6 +1,7 @@
 package de.zedlitz.opendocument;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class CellIterator implements Iterator<Cell> {
     private final Row row;
@@ -19,7 +20,7 @@ public class CellIterator implements Iterator<Cell> {
     @Override
     public Cell next() {
         if (next == null) {
-            throw new IllegalStateException("No more cells available.");
+            throw new NoSuchElementException("No more cells available.");
         }
         Cell current = next;
         next = row.nextCell();

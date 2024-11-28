@@ -1,6 +1,7 @@
 package de.zedlitz.opendocument;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class RowIterator implements Iterator<Row> {
     private final Table table;
@@ -19,7 +20,7 @@ public class RowIterator implements Iterator<Row> {
     @Override
     public Row next() {
         if (next == null) {
-            throw new IllegalStateException("No more rows available.");
+            throw new NoSuchElementException("No more rows available.");
         }
         Row current = next;
         next = table.nextRow();
