@@ -2,7 +2,12 @@ package de.zedlitz.opendocument;
 
 import org.junit.jupiter.api.Test;
 
+import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Objects;
 import java.util.zip.ZipFile;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,6 +32,14 @@ public class DocumentTest extends AbstractBaseTest {
             + "<table:table-row/><table:table-row><table:table-cell /></table:table-row>"
             + "</table:table><table:table table:name=\"Tabelle2\" table:style-name=\"ta1\" table:print=\"false\"/>"
             + "</office:spreadsheet></office:body></office:document-content>";
+
+    private static final String BROKEN_XML = "<office:document-content"
+            + " xmlns:office='urn:oasis:names:tc:opendocument:xmlns:office:1.0'"
+            + " xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'>"
+            + "<office:body></WRONG><office:spreadsheet>"
+            + "<table:table table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">"
+            + "</table:table></office:spreadsheet></office:body></office:document-content>";
+
 
     @Test
     public void testEmptyTable() throws Exception {
@@ -81,9 +94,8 @@ public class DocumentTest extends AbstractBaseTest {
     }
 
     @Test
-    public void testRealDocument() throws Exception, IOException {
-        final ZipFile file = new ZipFile(getClass().getResource("/test01.ods")
-                .getFile());
+    public void testRealDocument() throws Exception {
+        final ZipFile file = new ZipFile(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
 
         final Document doc = new Document(file);
 
@@ -124,10 +136,8 @@ public class DocumentTest extends AbstractBaseTest {
     }
 
     @Test
-    public void testRealDocumentInputStream() throws Exception,
-            IOException {
-        final Document doc = new Document(getClass()
-                .getResourceAsStream("/test01.ods"));
+    public void testRealDocumentInputStream() throws Exception {
+        final Document doc = new Document(getClass().getResourceAsStream("/test01.ods"));
         final Table table1 = doc.nextTable();
         assertNotNull(table1, "1st table exits");
         assertEquals("Tabelle1", table1.getName(), "correct name");
@@ -139,6 +149,38 @@ public class DocumentTest extends AbstractBaseTest {
             assertNotNull(cell, "cell not null");
             assertEquals(s, cell.getContent(), "correct content");
         }
-
     }
+
+    @Test
+    public void constructor_fileName() throws XMLStreamException, IOException {
+        String fileName = Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile();
+        final Document doc = new Document(fileName);
+        final Table table1 = doc.nextTable();
+        assertNotNull(table1, "1st table exits");
+    }
+
+    @Test
+    public void constructor_file() throws XMLStreamException, IOException {
+        File file = new File(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
+        final Document doc = new Document(file);
+        final Table table1 = doc.nextTable();
+        assertNotNull(table1, "1st table exits");
+    }
+
+    @Test
+    public void brokenXmlContent() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        final Document doc = new Document(this                .createParser(BROKEN_XML));
+        Table table = doc.nextTable();
+
+
+        System.setErr(originalErr);
+
+        assertNull(table);
+        assertTrue(errContent.toString().contains("XMLStreamException"));
+    }
+
 }

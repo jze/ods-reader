@@ -2,6 +2,9 @@ package de.zedlitz.opendocument;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -17,14 +20,18 @@ public class TableTest extends AbstractBaseTest {
                     " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">" +
                     "<table:table-row/><table:table-row/>" + "</table:table>";
 
+    private static final String BROKEN_XML_CONTENT =
+            "<table:table xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
+                    " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">";
+
     @Test
     public void testEmptyTable() throws Exception {
-        final Table table =
-                new Table(advanceToStartTag(createParser(CONTENT_EMPTY_TABLE)));
+        final Table table = new Table(advanceToStartTag(createParser(CONTENT_EMPTY_TABLE)));
         assertEquals("Tabelle1", table.getName(), "table has a name");
         assertNull(table.nextRow(), "table has no row");
         assertNull(table.nextRow(), "second call ok");
     }
+
 
     @Test
     public void testTwoEmptyRows() throws Exception {
@@ -51,5 +58,21 @@ public class TableTest extends AbstractBaseTest {
         assertNull(row2.nextCell(), "second call ok");
 
         assertNull(table.nextRow(), "no 3rd row");
+    }
+
+    @Test
+    public void brokenXmlContent() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        final Table table = new Table(advanceToStartTag(createParser(BROKEN_XML_CONTENT)));
+
+        Row row = table.nextRow();
+
+        System.setErr(originalErr);
+
+        assertNull(row);
+        assertTrue(errContent.toString().contains("XMLStreamException"));
     }
 }

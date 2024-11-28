@@ -1,6 +1,10 @@
 package de.zedlitz.opendocument;
 
 import org.apache.commons.lang.StringUtils;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -72,17 +76,20 @@ public class RowTest extends AbstractBaseTest {
                     "<table:table-cell office:value-type='string'><text:p>C1</text:p>" +
                     "</table:table-cell></table:table-row>";
 
+    private static final String BROKEN_XML_CONTENT=
+            "<table:table-row table:style-name=\"ro1\"" +
+                    " xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'>" ;
+    @Test
     public void testEmptyRow() throws Exception {
-        final Row row =
-                new Row(advanceToStartTag(createParser(CONTENT_EMPTY_ROW)));
+        final Row row =  new Row(advanceToStartTag(createParser(CONTENT_EMPTY_ROW)));
 
         assertNull(row.nextCell(), "row has no cells");
         assertNull(row.nextCell(), "second call ok");
     }
 
+    @Test
     public void testEmptyCells() throws Exception {
-        final Row row =
-                new Row(advanceToStartTag(createParser(CONTENT_3_EMPTY_CELLS)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_3_EMPTY_CELLS)));
 
         assertNotNull(row.nextCell(), "1st cell ok");
         assertNotNull(row.nextCell(), "2nd cell ok");
@@ -90,9 +97,9 @@ public class RowTest extends AbstractBaseTest {
         assertNull(row.nextCell(), "no 4th cell");
     }
 
+    @Test
     public void testEmptyCellsRepeated() throws Exception {
-        final Row row =
-                new Row(advanceToStartTag(createParser(CONTENT_CELLS_REPEATED)));
+        final Row row =   new Row(advanceToStartTag(createParser(CONTENT_CELLS_REPEATED)));
 
         assertNotNull(row.nextCell(), "1st cell ok");
         assertNotNull(row.nextCell(), "2nd cell ok");
@@ -100,9 +107,9 @@ public class RowTest extends AbstractBaseTest {
         assertNull(row.nextCell(), "no 4th cell");
     }
 
+    @Test
     public void testMixedContent() throws Exception {
-        final Row row =
-                new Row(advanceToStartTag(createParser(CONTENT_MIXED)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_MIXED)));
 
         final Cell cell1 = row.nextCell();
         assertNotNull(cell1, "1st cell ok");
@@ -134,9 +141,9 @@ public class RowTest extends AbstractBaseTest {
      * If you are not interesed in a note it will not be added to the cell's
      * content.
      */
+    @Test
     public void testIgnoreNote() throws Exception {
-        final Row row =
-                new Row(advanceToStartTag(createParser(CONTENT_NOTE)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_NOTE)));
 
         final Cell cell1 = row.nextCell();
         assertNotNull(cell1, "1st cell ok");
@@ -149,5 +156,21 @@ public class RowTest extends AbstractBaseTest {
         final Cell cell3 = row.nextCell();
         assertNotNull(cell3, "3rd cell ok");
         assertEquals("C1", cell3.getContent(), "3rd cell correct value");
+    }
+
+    @Test
+    public void brokenXmlContent() throws Exception {
+        PrintStream originalErr = System.err;
+        ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+        System.setErr(new PrintStream(errContent));
+
+        final Row table = new Row(advanceToStartTag(createParser(BROKEN_XML_CONTENT)));
+
+        Cell cell = table.nextCell();
+
+        System.setErr(originalErr);
+
+        assertNull(cell);
+        assertTrue(errContent.toString().contains("XMLStreamException"));
     }
 }
