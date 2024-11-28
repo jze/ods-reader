@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class RealworldTest {
 
@@ -57,7 +58,7 @@ public class RealworldTest {
         assertEquals("e1", cellE1.getContent());
 
         // The second line is only sparsely filled.
-        Row row2 =     table.nextRow();
+        Row row2 = table.nextRow();
         Cell cellC2 = row2.getAt(2);
         Cell cellB2 = row2.getAt(1);
         Cell cellA2 = row2.getAt(0);
@@ -67,6 +68,11 @@ public class RealworldTest {
         assertEquals("b2", cellB2.getContent());
         assertEquals("", cellC2.getContent());
         assertEquals("e2", cellE2.getContent());
+    }
 
+    @Test
+    public void noOdsFile() throws XMLStreamException, IOException {
+        final Document doc = new Document(getClass().getResourceAsStream("/no-ods.zip"));
+        assertNull(doc.nextTable());
     }
 }

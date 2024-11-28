@@ -3,6 +3,7 @@ package de.zedlitz.opendocument;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.util.function.Consumer;
 
 
@@ -14,15 +15,25 @@ import java.util.function.Consumer;
 public class Table {
     static final QName ELEMENT_TABLE = new QName(Document.NS_TABLE, "table");
     private static final String ATTRIBUTE_NAME = "name";
-    private final XMLStreamReaderWithDepth xpp;
-    private final int depth;
+    private final XMLStreamReader xpp;
     private String name;
 
-    Table(final XMLStreamReaderWithDepth parser) {
+    Table(final XMLStreamReader parser) {
         this.xpp = parser;
-        this.depth = parser.getDepth();
         this.setName(parser.getAttributeValue(Document.NS_TABLE, Table.ATTRIBUTE_NAME));
     }
+
+    private boolean isTableEndElement(int eventType) {
+
+        return eventType == XMLStreamConstants.END_ELEMENT && Table.ELEMENT_TABLE.equals(xpp.getName());
+    }
+
+    private boolean isRowStartElement(int eventType) {
+        return eventType == XMLStreamConstants.START_ELEMENT
+                && Row.ELEMENT_ROW.equals(xpp.getName())
+                && Document.NS_TABLE.equals(xpp.getNamespaceURI());
+    }
+
 
     public final Row nextRow() {
         Row result = null;
@@ -34,8 +45,9 @@ public class Table {
              */
             int eventType = xpp.getEventType();
 
-            while (!((eventType == XMLStreamConstants.END_ELEMENT) && Table.ELEMENT_TABLE.equals(xpp.getName()) && Document.NS_TABLE.equals(xpp.getNamespaceURI())) && (eventType != XMLStreamConstants.END_DOCUMENT) && (xpp.getDepth() >= depth)) {
-                if ((eventType == XMLStreamConstants.START_ELEMENT) && Row.ELEMENT_ROW.equals(xpp.getName()) && Document.NS_TABLE.equals(xpp.getNamespaceURI())) {
+            while (!isTableEndElement(eventType)) {
+
+                if (isRowStartElement(eventType)) {
                     // @PMD:REVIEWED:AvoidInstantiatingObjectsInLoops: by jzedlitz on 12.04.06 15:30
                     result = new Row(xpp);
                     xpp.next();
@@ -46,12 +58,12 @@ public class Table {
                 eventType = xpp.next();
             }
         } catch (final XMLStreamException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
         return result;
     }
+
 
     /**
      * @see de.zedlitz.opendocument.Table#getName()

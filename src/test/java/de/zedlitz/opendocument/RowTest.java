@@ -164,9 +164,9 @@ public class RowTest extends AbstractBaseTest {
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
-        final Row table = new Row(advanceToStartTag(createParser(BROKEN_XML_CONTENT)));
+        final Row row = new Row(advanceToStartTag(createParser(BROKEN_XML_CONTENT)));
 
-        Cell cell = table.nextCell();
+        Cell cell = row.nextCell();
 
         System.setErr(originalErr);
 

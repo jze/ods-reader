@@ -58,7 +58,6 @@ public class Cell {
                 eventType = parser.next();
             }
         } catch (final XMLStreamException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
