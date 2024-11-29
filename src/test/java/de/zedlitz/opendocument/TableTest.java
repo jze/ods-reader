@@ -2,8 +2,14 @@ package de.zedlitz.opendocument;
 
 import org.junit.jupiter.api.Test;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,8 +41,7 @@ public class TableTest extends AbstractBaseTest {
 
     @Test
     public void testTwoEmptyRows() throws Exception {
-        final Table table =
-                new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
+        final Table table = new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
         assertNotNull(table.nextRow(), "1st row ok");
         assertNotNull(table.nextRow(), "2nd row ok");
         assertNull(table.nextRow(), "no 3rd row");
@@ -74,5 +79,23 @@ public class TableTest extends AbstractBaseTest {
 
         assertNull(row);
         assertTrue(errContent.toString().contains("XMLStreamException"));
+    }
+
+    @Test
+    void iterator() throws XMLStreamException {
+        final Table table = new Table(advanceToStartTag(createParser(CONTENT_EMPTY_TABLE)));
+
+        Iterator<Row> it = table.iterator();
+        assertFalse(it.hasNext());
+        assertThrows(NoSuchElementException.class, it::next);
+    }
+
+    @Test
+    void openStream() throws XMLStreamException {
+        final Table table = new Table(advanceToStartTag(createParser(CONTENT_TWO_EMPTY_ROWS)));
+        Stream<Row> stream = table.openStream();
+        List<Row> rows = stream.collect(Collectors.toList());
+        assertEquals(2, rows.size());
+
     }
 }

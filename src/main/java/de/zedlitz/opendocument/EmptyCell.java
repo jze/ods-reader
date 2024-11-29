@@ -8,8 +8,8 @@ import org.apache.commons.lang.StringUtils;
  */
 public class EmptyCell extends Cell {
 
-    EmptyCell() {
-        super(null);
+    EmptyCell(Row row, int columnIndex) {
+        super(null, row, columnIndex);
     }
 
     public String getContent() {

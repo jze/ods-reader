@@ -3,8 +3,11 @@ package de.zedlitz.opendocument;
 import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -76,12 +79,13 @@ public class RowTest extends AbstractBaseTest {
                     "<table:table-cell office:value-type='string'><text:p>C1</text:p>" +
                     "</table:table-cell></table:table-row>";
 
-    private static final String BROKEN_XML_CONTENT=
+    private static final String BROKEN_XML_CONTENT =
             "<table:table-row table:style-name=\"ro1\"" +
-                    " xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'>" ;
+                    " xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'>";
+
     @Test
     public void testEmptyRow() throws Exception {
-        final Row row =  new Row(advanceToStartTag(createParser(CONTENT_EMPTY_ROW)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_EMPTY_ROW)), 0);
 
         assertNull(row.nextCell(), "row has no cells");
         assertNull(row.nextCell(), "second call ok");
@@ -89,7 +93,7 @@ public class RowTest extends AbstractBaseTest {
 
     @Test
     public void testEmptyCells() throws Exception {
-        final Row row = new Row(advanceToStartTag(createParser(CONTENT_3_EMPTY_CELLS)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_3_EMPTY_CELLS)), 0);
 
         assertNotNull(row.nextCell(), "1st cell ok");
         assertNotNull(row.nextCell(), "2nd cell ok");
@@ -99,7 +103,7 @@ public class RowTest extends AbstractBaseTest {
 
     @Test
     public void testEmptyCellsRepeated() throws Exception {
-        final Row row =   new Row(advanceToStartTag(createParser(CONTENT_CELLS_REPEATED)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_CELLS_REPEATED)), 0);
 
         assertNotNull(row.nextCell(), "1st cell ok");
         assertNotNull(row.nextCell(), "2nd cell ok");
@@ -109,17 +113,17 @@ public class RowTest extends AbstractBaseTest {
 
     @Test
     public void testMixedContent() throws Exception {
-        final Row row = new Row(advanceToStartTag(createParser(CONTENT_MIXED)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_MIXED)), 0);
 
         final Cell cell1 = row.nextCell();
         assertNotNull(cell1, "1st cell ok");
         assertEquals(StringUtils.EMPTY, cell1.getContent(), "1st cell empty");
-        assertEquals(Cell.TYPE_UNDEFINED, cell1.getValueType(), "1st cell correct type");
+        assertEquals("undefined", cell1.getValueType(), "1st cell correct type");
 
         final Cell cell2 = row.nextCell();
         assertNotNull(cell2, "2nd cell ok");
         assertEquals(StringUtils.EMPTY, cell2.getContent(), "2nd cell empty");
-        assertEquals(Cell.TYPE_UNDEFINED, cell2.getValueType(), "2nd cell correct type");
+        assertEquals("undefined", cell2.getValueType(), "2nd cell correct type");
 
         final Cell cell3 = row.nextCell();
         assertNotNull(cell3, "3rd cell ok");
@@ -143,7 +147,7 @@ public class RowTest extends AbstractBaseTest {
      */
     @Test
     public void testIgnoreNote() throws Exception {
-        final Row row = new Row(advanceToStartTag(createParser(CONTENT_NOTE)));
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_NOTE)), 0);
 
         final Cell cell1 = row.nextCell();
         assertNotNull(cell1, "1st cell ok");
@@ -164,7 +168,7 @@ public class RowTest extends AbstractBaseTest {
         ByteArrayOutputStream errContent = new ByteArrayOutputStream();
         System.setErr(new PrintStream(errContent));
 
-        final Row row = new Row(advanceToStartTag(createParser(BROKEN_XML_CONTENT)));
+        final Row row = new Row(advanceToStartTag(createParser(BROKEN_XML_CONTENT)), 0);
 
         Cell cell = row.nextCell();
 
@@ -172,5 +176,14 @@ public class RowTest extends AbstractBaseTest {
 
         assertNull(cell);
         assertTrue(errContent.toString().contains("XMLStreamException"));
+    }
+
+    @Test
+    void iterator() throws XMLStreamException {
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_EMPTY_ROW)), 0);
+
+        Iterator<Cell> it = row.iterator();
+        assertFalse(it.hasNext());
+        assertThrows(NoSuchElementException.class, it::next);
     }
 }

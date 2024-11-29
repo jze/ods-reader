@@ -21,6 +21,7 @@ public class Table implements Sheet, Iterable<Row> {
     private static final String ATTRIBUTE_NAME = "name";
     private final XMLStreamReader xpp;
     private String name;
+    private int rowNumber = 1;
 
     Table(final XMLStreamReader parser) {
         this.xpp = parser;
@@ -38,7 +39,6 @@ public class Table implements Sheet, Iterable<Row> {
                 && Document.NS_TABLE.equals(xpp.getNamespaceURI());
     }
 
-
     public final Row nextRow() {
         Row result = null;
 
@@ -53,7 +53,7 @@ public class Table implements Sheet, Iterable<Row> {
 
                 if (isRowStartElement(eventType)) {
                     // @PMD:REVIEWED:AvoidInstantiatingObjectsInLoops: by jzedlitz on 12.04.06 15:30
-                    result = new Row(xpp);
+                    result = new Row(xpp, rowNumber);
                     xpp.next();
 
                     break;
@@ -65,6 +65,7 @@ public class Table implements Sheet, Iterable<Row> {
             e.printStackTrace();
         }
 
+        rowNumber++;
         return result;
     }
 

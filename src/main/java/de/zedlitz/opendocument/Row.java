@@ -7,7 +7,10 @@ import javax.xml.stream.XMLStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterators;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 
 /**
@@ -21,11 +24,14 @@ public class Row implements Iterable<Cell> {
      */
     static final QName ELEMENT_ROW = new QName(Document.NS_TABLE, "table-row");
     private final XMLStreamReader xpp;
+    private final int rowNumber;
+    int columnIndex = 0;
     private List<Cell> allCells = null;
     private int emptyCells;
 
-    public Row(final XMLStreamReader xpp) {
+    public Row(final XMLStreamReader xpp, int rowNumber) {
         this.xpp = xpp;
+        this.rowNumber = rowNumber;
     }
 
     private boolean isCellStartElement(int eventType) {
@@ -41,7 +47,7 @@ public class Row implements Iterable<Cell> {
 
         // while there are empty (faked) cells return one those
         if (this.emptyCells > 0) {
-            result = new EmptyCell();
+            result = new EmptyCell(this, columnIndex);
             this.emptyCells--;
         } else {
             try {
@@ -49,7 +55,7 @@ public class Row implements Iterable<Cell> {
 
                 while (!isRowEndElement(eventType)) {
                     if (isCellStartElement(eventType)) {
-                        final Cell myCell = new Cell(xpp);
+                        final Cell myCell = new Cell(xpp, this, columnIndex);
 
                         if (myCell.getNumberColumnsRepeated() > 1) {
                             this.emptyCells = myCell.getNumberColumnsRepeated() - 1;
@@ -67,6 +73,8 @@ public class Row implements Iterable<Cell> {
                 e.printStackTrace();
             }
         }
+
+        columnIndex++;
 
         return result;
     }
@@ -98,5 +106,16 @@ public class Row implements Iterable<Cell> {
     @Override
     public Iterator<Cell> iterator() {
         return new CellIterator(this);
+    }
+
+    public Stream<Cell> openStream() {
+        return StreamSupport.stream(
+                Spliterators.spliteratorUnknownSize(iterator(), 0),
+                false
+        );
+    }
+
+    public int getRowNum() {
+        return this.rowNumber;
     }
 }
