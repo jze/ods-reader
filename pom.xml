@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>de.zedlitz</groupId>
   <name>OpenDocument reader</name>
   <artifactId>ods-reader</artifactId>
-  <version>1.0</version>
+  <version>1.0.0</version>
   <description>streaming reader for OpenDocument files</description>
   <url>https://github.com/jze/opendocument-reader</url>
   <properties>
@@ -23,6 +23,7 @@
     <connection>scm:git:https://github.com/jze/opendocument-reader.git</connection>
     <developerConnection>scm:git:git@github.com:jze/opendocument-reader.git</developerConnection>
     <url>https://github.com/jze/opendocument-reader</url>
+    <tag>ods-reader-1.0.0</tag>
   </scm>
   <developers>
     <developer>
