@@ -1,4 +1,8 @@
 # ods-reader
+
+![Maven Central version](https://img.shields.io/maven-central/v/de.zedlitz/ods-reader)
+![Coverage](.github/badges/jacoco.svg)
+
 You want to import very large OpenDocument tables (ODS file) and worry about memory usage? In that case the ods-reader might be interesting for you. Instead of loading the entire document, it is a pull-based reader. It therefore has a very low memory consumption, even with huge documents.
 
 ## Usage
