@@ -17,7 +17,18 @@ Here is an example how to use the ods-reader:
     System.out.println( a.getContent + "\t" + b.getContent );
     row = table.nextRow();
   }
-  
+```
+
+### Maven 
+
+The library is available at Maven Central. You can add a dependency to `ods-reader` to you project like this:
+
+```xml
+<dependency>
+    <groupId>de.zedlitz</groupId>
+    <artifactId>ods-reader</artifactId>
+    <version>1.0.1</version>
+</dependency>
 ```
 
 ## Cell types
