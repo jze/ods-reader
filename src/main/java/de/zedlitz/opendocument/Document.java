@@ -3,9 +3,11 @@ package de.zedlitz.opendocument;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -28,8 +30,7 @@ public class Document {
      */
     static String NS_OFFICE = "urn:oasis:names:tc:opendocument:xmlns:office:1.0";
 
-    private final XMLStreamReaderWithDepth xpp;
-    private int depth;
+    private final XMLStreamReader xpp;
 
     public Document(final String filename)
             throws XMLStreamException, IOException {
@@ -43,8 +44,7 @@ public class Document {
     public Document(final ZipFile file) throws XMLStreamException, IOException {
         final XMLInputFactory factory = XMLInputFactory.newInstance();
         final ZipEntry content = file.getEntry("content.xml");
-        this.xpp = new XMLStreamReaderWithDepth(factory.createXMLStreamReader(
-                file.getInputStream(content)));
+        this.xpp = factory.createXMLStreamReader(file.getInputStream(content));
     }
 
     public Document(final InputStream inputStream)
@@ -64,13 +64,11 @@ public class Document {
             }
         }
 
-        this.xpp = new XMLStreamReaderWithDepth(factory.createXMLStreamReader(
-                zipInputStream));
+        this.xpp = factory.createXMLStreamReader(zipInputStream);
     }
 
-    public Document(final XMLStreamReaderWithDepth parser) {
+    public Document(final XMLStreamReader parser) {
         this.xpp = parser;
-        this.depth = parser.getDepth();
     }
 
     public final Table nextTable() {
@@ -83,8 +81,7 @@ public class Document {
              */
             int eventType = xpp.getEventType();
 
-            while ((eventType != XMLStreamConstants.END_DOCUMENT) &&
-                    (xpp.getDepth() >= this.depth)) {
+            while ((eventType != XMLStreamConstants.END_DOCUMENT)) {
                 if ((eventType == XMLStreamConstants.START_ELEMENT) &&
                         Table.ELEMENT_TABLE.equals(xpp.getName())) {
                     result = new Table(xpp);
@@ -109,5 +106,22 @@ public class Document {
             c.accept(nextTable);
             nextTable = this.nextTable();
         }
+    }
+
+    public Optional<Table> getTable(int i) {
+        int count = 0;
+        Table nextTable = this.nextTable();
+        while (nextTable != null) {
+            if (count == i) {
+                return Optional.of(nextTable);
+            }
+            count++;
+            nextTable = this.nextTable();
+        }
+        return Optional.empty();
+    }
+
+    public Optional<Sheet> getSheet(int i) {
+        return getTable(i).map(it -> it);
     }
 }
