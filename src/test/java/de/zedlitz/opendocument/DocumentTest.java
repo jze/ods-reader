@@ -7,6 +7,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.zip.ZipFile;
@@ -161,6 +163,14 @@ public class DocumentTest extends AbstractBaseTest {
     public void constructor_file() throws XMLStreamException, IOException {
         File file = new File(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
         final Document doc = new Document(file);
+        final Table table1 = doc.nextTable();
+        assertNotNull(table1, "1st table exits");
+    }
+
+    @Test
+    public void constructor_path() throws XMLStreamException, IOException {
+        Path path = Paths.get(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
+        final Document doc = new Document(path);
         final Table table1 = doc.nextTable();
         assertNotNull(table1, "1st table exits");
     }
