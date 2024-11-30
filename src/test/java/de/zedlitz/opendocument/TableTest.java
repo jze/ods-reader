@@ -29,7 +29,7 @@ public class TableTest extends AbstractBaseTest {
     private static final String BROKEN_XML_CONTENT =
             "<table:table xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
                     " table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">";
-
+    
     @Test
     public void testEmptyTable() throws Exception {
         final Table table = new Table(advanceToStartTag(createParser(CONTENT_EMPTY_TABLE)));
@@ -96,6 +96,5 @@ public class TableTest extends AbstractBaseTest {
         Stream<Row> stream = table.openStream();
         List<Row> rows = stream.collect(Collectors.toList());
         assertEquals(2, rows.size());
-
     }
 }

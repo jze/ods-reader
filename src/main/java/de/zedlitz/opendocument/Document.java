@@ -108,7 +108,7 @@ public class Document {
         }
     }
 
-    public Optional<Sheet> getSheet(int i) {
+    public Optional<Table> getTable(int i) {
         int count = 0;
         Table nextTable = this.nextTable();
         while (nextTable != null) {
@@ -119,5 +119,9 @@ public class Document {
             nextTable = this.nextTable();
         }
         return Optional.empty();
+    }
+
+    public Optional<Sheet> getSheet(int i) {
+        return getTable(i).map(it -> it);
     }
 }

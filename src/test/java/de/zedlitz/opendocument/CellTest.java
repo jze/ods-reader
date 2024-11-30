@@ -17,6 +17,24 @@ public class CellTest extends AbstractBaseTest {
     private static final String CONTENT_EMPTY_CELL =
             "<table:table-cell xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
 
+    /**
+     * A date cell without a date-value attribute. I don't think this situation can happen in real live.
+     */
+    private static final String CONTENT_MISSING_DATE_VALUE =
+            "<table:table-cell  office:value-type=\"date\" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
+
+    /**
+     * A time cell without a time-value attribute. I don't think this situation can happen in real live.
+     */
+    private static final String CONTENT_MISSING_TIME_VALUE =
+            "<table:table-cell  office:value-type=\"time\" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
+
+    /**
+     * A boolean cell without a time-value attribute. I don't think this situation can happen in real live.
+     */
+    private static final String CONTENT_MISSING_BOOLEAN_VALUE =
+            "<table:table-cell  office:value-type=\"boolean\" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
+
     private static final String BROKEN_XML_CONTENT =
             "<table:table-cell xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'><WRONG></table:table-cell>";
 
@@ -131,6 +149,16 @@ public class CellTest extends AbstractBaseTest {
         assertEquals("1999-12-31T07:35:02", cells.get(22).getDateValue());
         assertEquals("1899-12-30T13:37:46", cells.get(28).getDateValue());
     }
+
+    @Test
+    public void testIsDateTime() throws Exception {
+        List<Cell> cells = getCellsFromDemoFile("/formats_german.ods");
+        assertFalse(cells.get(0).isDateTime());
+        assertFalse(cells.get(11).isDateTime());
+        assertTrue(cells.get(22).isDateTime());
+        assertTrue(cells.get(28).isDateTime());
+    }
+
     @Test
     public void testAsBoolean() throws Exception {
         List<Cell> cells = getCellsFromDemoFile("/formats_french.ods");
@@ -175,5 +203,19 @@ public class CellTest extends AbstractBaseTest {
         assertEquals("50000", cells.get(0).getValue());
         assertEquals("0.1295", cells.get(7).getValue());
         assertEquals("120.5", cells.get(8).getValue());
+    }
+
+    @Test
+    public void invalidCells() throws XMLStreamException {
+        Cell cell = new Cell(advanceToStartTag(createParser(CONTENT_MISSING_DATE_VALUE)), new DummyRow(), 0);
+        assertThrows(OdsReaderException.class, cell::asDate);
+        assertThrows(OdsReaderException.class, cell::asDateTime);
+
+        cell = new Cell(advanceToStartTag(createParser(CONTENT_MISSING_TIME_VALUE)), new DummyRow(), 0);
+        assertThrows(OdsReaderException.class, cell::asTime);
+
+        cell = new Cell(advanceToStartTag(createParser(CONTENT_MISSING_BOOLEAN_VALUE)), new DummyRow(), 0);
+        assertThrows(OdsReaderException.class, cell::asBoolean);
+
     }
 }

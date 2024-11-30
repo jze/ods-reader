@@ -53,8 +53,7 @@ public class DocumentTest extends AbstractBaseTest {
 
     @Test
     public void testEmptyTableCheckRows() throws Exception {
-        final Document doc = new Document(this
-                .createParser(CONTENT_ONE_EMPTY_TABLE));
+        final Document doc = new Document(this.createParser(CONTENT_ONE_EMPTY_TABLE));
         final Table tab = doc.nextTable();
         assertNotNull(tab, "one table");
         assertNull(tab.nextRow(), "no row");
@@ -63,8 +62,7 @@ public class DocumentTest extends AbstractBaseTest {
 
     @Test
     public void testSkipRows() throws Exception {
-        final Document doc = new Document(this
-                .createParser(CONTENT_ONE_TWO_ROWS));
+        final Document doc = new Document(this.createParser(CONTENT_ONE_TWO_ROWS));
 
         final Table tab1 = doc.nextTable();
         assertNotNull(tab1, "1st table");
@@ -77,8 +75,7 @@ public class DocumentTest extends AbstractBaseTest {
 
     @Test
     public void testReadRows() throws Exception {
-        final Document doc = new Document(this
-                .createParser(CONTENT_ONE_TWO_ROWS));
+        final Document doc = new Document(this                    .createParser(CONTENT_ONE_TWO_ROWS));
 
         final Table tab1 = doc.nextTable();
         assertNotNull(tab1, "1st table");
@@ -211,6 +208,11 @@ public class DocumentTest extends AbstractBaseTest {
 
         Optional<Sheet> sheet = doc.getSheet(5);
         assertFalse(sheet.isPresent());
+    }
+
+    @Test
+    public void constructor_emptyZipFile() throws XMLStreamException, IOException {
+         Document doc = new Document(getClass().getResourceAsStream("/empty.zip"));
     }
 
 }

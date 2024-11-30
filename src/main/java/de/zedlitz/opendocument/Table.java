@@ -18,6 +18,7 @@ import java.util.stream.StreamSupport;
  */
 public class Table implements Sheet, Iterable<Row> {
     static final QName ELEMENT_TABLE = new QName(Document.NS_TABLE, "table");
+
     private static final String ATTRIBUTE_NAME = "name";
     private final XMLStreamReader xpp;
     private String name;
@@ -35,8 +36,7 @@ public class Table implements Sheet, Iterable<Row> {
 
     private boolean isRowStartElement(int eventType) {
         return eventType == XMLStreamConstants.START_ELEMENT
-                && Row.ELEMENT_ROW.equals(xpp.getName())
-                && Document.NS_TABLE.equals(xpp.getNamespaceURI());
+                && Row.ELEMENT_ROW.equals(xpp.getName());
     }
 
     public final Row nextRow() {
