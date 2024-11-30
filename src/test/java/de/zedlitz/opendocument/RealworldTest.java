@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -105,8 +107,8 @@ public class RealworldTest {
         final Document doc = new Document(getClass().getResourceAsStream("/formats.ods"));
         Table table = doc.nextTable();
 
-        List<String> row1 = table.nextRow().openStream().map(Cell::getRawValue).collect(Collectors.toList());
-        List<String> row2 = table.nextRow().openStream().map(Cell::getRawValue).collect(Collectors.toList());
+        List<String> row1 = table.nextRow().openStream().map(Cell::getContent).collect(Collectors.toList());
+        List<String> row2 = table.nextRow().openStream().map(Cell::getContent).collect(Collectors.toList());
         assertEquals(expectedRow1, row1);
         assertEquals(expectedRow2, row2);
 
@@ -115,17 +117,63 @@ public class RealworldTest {
     }
 
     @Test
-    public void moreFormats() throws Exception {
-
-        final Document doc = new Document(getClass().getResourceAsStream("/formats2.ods"));
+    public void languageDependentFrench() throws Exception {
+        final Document doc = new Document(getClass().getResourceAsStream("/formats_french.ods"));
         Table table = doc.nextTable();
 
+        List<String> values = new ArrayList<>();
         Row row = table.nextRow();
-        while( row != null) {
-            Cell cell =        row.nextCell();
+        while (row != null) {
+            values.add(row.nextCell().getContent());
             row = table.nextRow();
         }
 
-
+        assertEquals("31 déc. 99", values.get(13));
+        assertEquals("ven. 31 déc. 99", values.get(17));
+        assertEquals("4e trimestre 99", values.get(19));
+        assertEquals("123 4/10", values.get(32));
+        assertEquals("VRAI", values.get(33));
+        assertEquals("FAUX", values.get(34));
     }
+
+    @Test
+    public void languageDependentGerman() throws Exception {
+        final Document doc = new Document(getClass().getResourceAsStream("/formats_german.ods"));
+        Table table = doc.nextTable();
+
+        List<String> values = new ArrayList<>();
+        Row row = table.nextRow();
+        while (row != null) {
+            values.add(row.nextCell().getContent());
+            row = table.nextRow();
+        }
+
+        assertEquals("31. Dez 99", values.get(13));
+        assertEquals("Fr, 31. Dez 99", values.get(17));
+        assertEquals("4. Quartal 99", values.get(19));
+        assertEquals("123 4/10", values.get(32));
+        assertEquals("WAHR", values.get(33));
+        assertEquals("FALSCH", values.get(34));
+    }
+
+    @Test
+    public void languageDependentEnglish() throws Exception {
+        final Document doc = new Document(getClass().getResourceAsStream("/formats_english.ods"));
+        Table table = doc.nextTable();
+
+        List<String> values = new ArrayList<>();
+        Row row = table.nextRow();
+        while (row != null) {
+            values.add(row.nextCell().getContent());
+            row = table.nextRow();
+        }
+
+        assertEquals("Dec 31, 99", values.get(13));
+        assertEquals("Fri, Dec 31, 99", values.get(17));
+        assertEquals("4th quarter 99", values.get(19));
+        assertEquals("123 4/10", values.get(32));
+        assertEquals("TRUE", values.get(33));
+        assertEquals("FALSE", values.get(34));
+    }
+
 }
