@@ -7,6 +7,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.zip.ZipEntry;
@@ -39,6 +40,10 @@ public class Document {
 
     public Document(final File file) throws XMLStreamException, IOException {
         this(new ZipFile(file));
+    }
+
+    public Document(final Path path) throws XMLStreamException, IOException {
+        this(new ZipFile(path.toFile()));
     }
 
     public Document(final ZipFile file) throws XMLStreamException, IOException {
