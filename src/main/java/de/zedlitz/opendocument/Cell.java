@@ -24,6 +24,9 @@ public class Cell {
     protected final static String TYPE_UNDEFINED = "undefined";
     final static QName ELEMENT_CELL = new QName(Document.NS_TABLE, "table-cell");
     private final static QName ELEMENT_ANNOTATION = new QName(Document.NS_OFFICE, "annotation");
+    private final static QName ELEMENT_SPACE = new QName(Document.NS_TEXT, "s");
+    private final static QName ELEMENT_PARAGRAPH = new QName(Document.NS_TEXT, "p");
+
     private final static String ATTRIBUTE_VALUE_TYPE = "value-type";
     private final static String ATTRIBUTE_NUMBER_COLUMNS_REPEATED = "number-columns-repeated";
     private static final String ATTRIBUTE_VALUE = "value";
@@ -68,12 +71,31 @@ public class Cell {
         try {
             int eventType = parser.getEventType();
 
+            int paragraphs = 0;
+
             while (!((eventType == XMLStreamConstants.END_ELEMENT) &&
                     Cell.ELEMENT_CELL.equals(parser.getName()))) {
-                if ((eventType == XMLStreamConstants.START_ELEMENT) &&
-                        Cell.ELEMENT_ANNOTATION.equals(parser.getName())) {
-                    // skip note
-                    skipNote(parser);
+
+                if (eventType == XMLStreamConstants.START_ELEMENT) {
+                    QName qName = parser.getName();
+
+                    if (Cell.ELEMENT_ANNOTATION.equals(qName)) {
+                        // skip note
+                        skipNote(parser);
+                    } else if (Cell.ELEMENT_SPACE.equals(qName)) {
+                        // pure spaces element - add extra spaces
+                        int spacesCount = getSpacesCount(parser);
+                        for (int i = 0; i<spacesCount; i++) {
+                            this.content.append(" ");
+                        }
+                    } else if (Cell.ELEMENT_PARAGRAPH.equals(qName)) {
+                        // if this is not the first paragraph, add a newline to content
+                        if (paragraphs > 0) {
+                            this.content.append(System.lineSeparator());
+                        }
+                        paragraphs++;
+                    }
+
                 } else if (eventType == XMLStreamConstants.CHARACTERS) {
                     this.content.append(parser.getText());
                 }
@@ -82,6 +104,18 @@ public class Cell {
             }
         } catch (final XMLStreamException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Needs to be called while at START_ELEMENT with name {@link Document#NS_TEXT}
+     */
+    private static int getSpacesCount(final XMLStreamReader parser) {
+        String countAttribute = parser.getAttributeValue(Document.NS_TEXT, "c");
+        if (countAttribute == null) {
+            return 1;
+        } else {
+            return Integer.parseInt(countAttribute);
         }
     }
 

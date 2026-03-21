@@ -31,6 +31,8 @@ public class Document {
      */
     static String NS_OFFICE = "urn:oasis:names:tc:opendocument:xmlns:office:1.0";
 
+    static String NS_TEXT = "urn:oasis:names:tc:opendocument:xmlns:text:1.0";
+
     private final XMLStreamReader xpp;
 
     public Document(final String filename)

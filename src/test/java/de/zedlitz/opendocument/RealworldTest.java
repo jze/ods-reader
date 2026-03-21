@@ -61,6 +61,61 @@ public class RealworldTest {
         assertEquals(26, numberOfCells.get());
     }
 
+    @Test
+    public void testSpaces() throws Exception {
+        final Document doc = new Document(getClass().getResourceAsStream("/testSpaces.ods"));
+
+        Table table = doc.nextTable();
+        Row row = table.nextRow();
+
+        // first cell has content "A  A" (with double-spaces)
+        Cell cell = row.nextCell();
+        assertSpacesAndNewLines(cell, 2, 0);
+
+        // second cell has content "A   A" (3 spaces)
+        cell = row.nextCell();
+        assertSpacesAndNewLines(cell, 3, 0);
+
+        // third cell has content "A\nA\nA" (2 newlines)
+        cell = row.nextCell();
+        assertSpacesAndNewLines(cell, 0,  2);
+
+        // third cell has content "A\n\nA" (2 newlines)
+        cell = row.nextCell();
+        assertSpacesAndNewLines(cell, 0,  2);
+    }
+
+    private int countOccurrences(String string, String search) {
+        int count = 0;
+        for (int i = 0; i < string.length(); i++) {
+            if (hasStringAt(string, search, i)) count++;
+        }
+
+        return count;
+    }
+
+    private void assertSpacesAndNewLines(Cell cell, int expectedSpaces, int expectedNewLines) {
+        String content = cell.getContent();
+        int spacesInContent = countOccurrences(content, " ");
+        int newLinesInContent = countOccurrences(content, System.lineSeparator());
+
+        String message = "Cell " + cell.getColumnIndex() + " - content read: [" + content + "]";
+        assertEquals(expectedSpaces, spacesInContent, message);
+        assertEquals(expectedNewLines, newLinesInContent, message);
+    }
+
+    private boolean hasStringAt(String string, String search, int index) {
+        if (index < 0 || index >= string.length()) {
+            return false;
+        }
+
+        for (int i = 0; i < search.length() && (index + i) < string.length() ; i++) {
+            if (string.charAt(index + i) !=  search.charAt(i)) return false;
+        }
+
+        return true;
+    }
+
     /**
      * Test the access to a cell by its number
      */
@@ -149,7 +204,7 @@ public class RealworldTest {
         assertEquals("31 déc. 99", values.get(13));
         assertEquals("ven. 31 déc. 99", values.get(17));
         assertEquals("4e trimestre 99", values.get(19));
-        assertEquals("123 4/10", values.get(32));
+        assertEquals("123  4/10", values.get(32));
         assertEquals("VRAI", values.get(33));
         assertEquals("FAUX", values.get(34));
     }
@@ -169,7 +224,7 @@ public class RealworldTest {
         assertEquals("31. Dez 99", values.get(13));
         assertEquals("Fr, 31. Dez 99", values.get(17));
         assertEquals("4. Quartal 99", values.get(19));
-        assertEquals("123 4/10", values.get(32));
+        assertEquals("123  4/10", values.get(32));
         assertEquals("WAHR", values.get(33));
         assertEquals("FALSCH", values.get(34));
     }
@@ -189,7 +244,7 @@ public class RealworldTest {
         assertEquals("Dec 31, 99", values.get(13));
         assertEquals("Fri, Dec 31, 99", values.get(17));
         assertEquals("4th quarter 99", values.get(19));
-        assertEquals("123 4/10", values.get(32));
+        assertEquals("123  4/10", values.get(32));
         assertEquals("TRUE", values.get(33));
         assertEquals("FALSE", values.get(34));
     }
