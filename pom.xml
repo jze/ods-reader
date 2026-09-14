@@ -4,7 +4,7 @@
   <groupId>de.zedlitz</groupId>
   <name>ODS reader</name>
   <artifactId>ods-reader</artifactId>
-  <version>1.2.0-SNAPSHOT</version>
+  <version>1.2.0</version>
   <description>streaming reader for ODS files</description>
   <url>https://github.com/jze/ods-reader</url>
   <properties>
@@ -23,7 +23,7 @@
     <connection>scm:git:https://github.com/jze/ods-reader.git</connection>
     <developerConnection>scm:git:git@github.com:jze/ods-reader.git</developerConnection>
     <url>https://github.com/jze/ods-reader</url>
-    <tag>HEAD</tag>
+    <tag>ods-reader-1.2.0</tag>
   </scm>
   <developers>
     <developer>
