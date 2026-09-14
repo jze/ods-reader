@@ -1,6 +1,5 @@
 package de.zedlitz.opendocument;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
@@ -42,7 +41,7 @@ public class CellTest extends AbstractBaseTest {
     public void empty() throws Exception {
         final Cell cell = new Cell(advanceToStartTag(createParser(CONTENT_EMPTY_CELL)), new DummyRow(), 0);
 
-        assertEquals(StringUtils.EMPTY, cell.getContent());
+        assertEquals("", cell.getContent());
         assertEquals("[undefined \"\"]", cell.toString());
     }
 

@@ -1,6 +1,5 @@
 package de.zedlitz.opendocument;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
@@ -117,12 +116,12 @@ public class RowTest extends AbstractBaseTest {
 
         final Cell cell1 = row.nextCell();
         assertNotNull(cell1, "1st cell ok");
-        assertEquals(StringUtils.EMPTY, cell1.getContent(), "1st cell empty");
+        assertEquals("", cell1.getContent(), "1st cell empty");
         assertEquals("undefined", cell1.getValueType(), "1st cell correct type");
 
         final Cell cell2 = row.nextCell();
         assertNotNull(cell2, "2nd cell ok");
-        assertEquals(StringUtils.EMPTY, cell2.getContent(), "2nd cell empty");
+        assertEquals("", cell2.getContent(), "2nd cell empty");
         assertEquals("undefined", cell2.getValueType(), "2nd cell correct type");
 
         final Cell cell3 = row.nextCell();

@@ -1,8 +1,5 @@
 package de.zedlitz.opendocument;
 
-import org.apache.commons.lang.StringUtils;
-
-
 /**
  * @author jzedlitz
  */
@@ -13,7 +10,7 @@ public class EmptyCell extends Cell {
     }
 
     public String getContent() {
-        return StringUtils.EMPTY;
+        return "";
     }
 
     public String getValueType() {

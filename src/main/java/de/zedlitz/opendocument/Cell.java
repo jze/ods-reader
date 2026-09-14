@@ -3,9 +3,6 @@
  */
 package de.zedlitz.opendocument;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
-
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -53,17 +50,23 @@ public class Cell {
             return;
         }
 
-        this.valueType = StringUtils.defaultIfEmpty(parser.getAttributeValue(
-                        Document.NS_OFFICE, Cell.ATTRIBUTE_VALUE_TYPE),
-                Cell.TYPE_UNDEFINED);
+        this.valueType = parser.getAttributeValue(Document.NS_OFFICE, Cell.ATTRIBUTE_VALUE_TYPE);
+        if (this.valueType == null || this.valueType.isEmpty()) {
+            this.valueType = Cell.TYPE_UNDEFINED;
+        }
         this.dateValue = parser.getAttributeValue(Document.NS_OFFICE, Cell.ATTRIBUTE_DATE_VALUE);
         this.value = parser.getAttributeValue(Document.NS_OFFICE, Cell.ATTRIBUTE_VALUE);
         this.booleanValue = parser.getAttributeValue(Document.NS_OFFICE, Cell.ATTRIBUTE_BOOLEAN_VALUE);
         this.timeValue = parser.getAttributeValue(Document.NS_OFFICE, Cell.ATTRIBUTE_TIME_VALUE);
         this.currency = parser.getAttributeValue(Document.NS_OFFICE, Cell.ATTRIBUTE_CURRENCY);
 
-        this.numberColumnsRepeated = NumberUtils.toInt(parser.getAttributeValue(
-                Document.NS_TABLE, Cell.ATTRIBUTE_NUMBER_COLUMNS_REPEATED));
+        try {
+            this.numberColumnsRepeated = Integer.parseInt(parser.getAttributeValue(
+                    Document.NS_TABLE, Cell.ATTRIBUTE_NUMBER_COLUMNS_REPEATED));
+        } catch (final RuntimeException e) {
+            this.numberColumnsRepeated = 0;
+        }
+
 
         /*
          * extract content
@@ -85,7 +88,7 @@ public class Cell {
                     } else if (Cell.ELEMENT_SPACE.equals(qName)) {
                         // pure spaces element - add extra spaces
                         int spacesCount = getSpacesCount(parser);
-                        for (int i = 0; i<spacesCount; i++) {
+                        for (int i = 0; i < spacesCount; i++) {
                             this.content.append(" ");
                         }
                     } else if (Cell.ELEMENT_PARAGRAPH.equals(qName)) {
@@ -132,7 +135,8 @@ public class Cell {
 
     /**
      * Get the raw value of the <code>currency</code> attribute. It is only present for cells with the type "currency".
-     * @return  the raw currency value or <code>null</code> if not present.
+     *
+     * @return the raw currency value or <code>null</code> if not present.
      */
     public String getCurrency() {
         return currency;
@@ -140,7 +144,8 @@ public class Cell {
 
     /**
      * Get the raw value of the <code>time-value</code> attribute. It is only present for cells with the type "time".
-     * @return  the raw time value or <code>null</code> if not present.
+     *
+     * @return the raw time value or <code>null</code> if not present.
      */
     public String getTimeValue() {
         return timeValue;
@@ -148,7 +153,8 @@ public class Cell {
 
     /**
      * Get the raw value of the <code>boolean-value</code> attribute. It is only present for cells with the type "boolean".
-     * @return  the raw boolean value or <code>null</code> if not present.
+     *
+     * @return the raw boolean value or <code>null</code> if not present.
      */
     public String getBooleanValue() {
         return booleanValue;
@@ -156,7 +162,8 @@ public class Cell {
 
     /**
      * Get the raw value of the <code>date-value</code> attribute. It is only present for cells with the type "date".
-     * @return  the raw date value or <code>null</code> if not present.
+     *
+     * @return the raw date value or <code>null</code> if not present.
      */
     public String getDateValue() {
         return dateValue;
@@ -174,6 +181,7 @@ public class Cell {
 
     /**
      * Get the raw value of the <code>value-type</code> attribute. It should be present for every cell.
+     *
      * @return Returns the valueType or <code>null</code> if not present.
      */
     public String getValueType() {
@@ -211,8 +219,8 @@ public class Cell {
      * @throws OdsReaderException is the cell is not a boolean cell
      */
     public boolean asBoolean() {
-        if ("boolean".equals(valueType) && StringUtils.isNotEmpty(booleanValue)) {
-            return Boolean.valueOf(booleanValue);
+        if ("boolean".equals(valueType) && booleanValue != null && !booleanValue.isEmpty()) {
+            return Boolean.parseBoolean(booleanValue);
         }
 
         throw new OdsReaderException("Wrong cell type " + valueType + " for boolean value");
@@ -227,7 +235,7 @@ public class Cell {
      * @throws OdsReaderException is the cell is not a date cell
      */
     public LocalDate asDate() {
-        if ("date".equals(valueType) && StringUtils.isNotEmpty(dateValue)) {
+        if ("date".equals(valueType) && dateValue != null && !dateValue.isEmpty()) {
             return LocalDate.parse(dateValue);
         }
 
@@ -243,7 +251,7 @@ public class Cell {
      * @throws OdsReaderException is the cell is not a date cell
      */
     public LocalDateTime asDateTime() {
-        if ("date".equals(valueType) && StringUtils.isNotEmpty(dateValue)) {
+        if ("date".equals(valueType) && dateValue != null && !dateValue.isEmpty()) {
             if (dateValue.contains("T")) {
                 // date and time
                 return LocalDateTime.parse(dateValue, DateTimeFormatter.ISO_DATE_TIME);
@@ -260,7 +268,7 @@ public class Cell {
      * Does the cell contain a value that consists of a date and a time?
      */
     public boolean isDateTime() {
-        return "date".equals(valueType) && StringUtils.contains(dateValue, "T");
+        return "date".equals(valueType) && dateValue != null && dateValue.contains("T");
     }
 
     /**
@@ -271,7 +279,7 @@ public class Cell {
      * @throws OdsReaderException is the cell is not a time cell
      */
     public LocalTime asTime() {
-        if ("time".equals(valueType) && StringUtils.isNotEmpty(timeValue)) {
+        if ("time".equals(valueType) && timeValue != null && !timeValue.isEmpty()) {
             Duration duration = Duration.parse(timeValue);
             return LocalTime.ofSecondOfDay(duration.getSeconds());
         }
@@ -305,7 +313,7 @@ public class Cell {
      * It is the contents of the <code>content</code> or the <code>value</code> attribute of the cell element.
      */
     public String getLanguageIndependentContent() {
-        if( value != null) {
+        if (value != null) {
             return value;
         } else {
             return getContent();
