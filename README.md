@@ -27,7 +27,7 @@ The library is available at Maven Central. You can add a dependency to `ods-read
 <dependency>
     <groupId>de.zedlitz</groupId>
     <artifactId>ods-reader</artifactId>
-    <version>1.0.1</version>
+    <version>1.2.0</version>
 </dependency>
 ```
 
