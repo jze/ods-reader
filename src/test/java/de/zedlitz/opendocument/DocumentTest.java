@@ -1,17 +1,23 @@
 package de.zedlitz.opendocument;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,6 +49,42 @@ public class DocumentTest extends AbstractBaseTest {
             + "<table:table table:name=\"Tabelle1\" table:style-name=\"ta1\" table:print=\"false\">"
             + "</table:table></office:spreadsheet></office:body></office:document-content>";
 
+
+    /**
+     * External entities must not be resolved (XXE).
+     */
+    @Test
+    public void externalEntitiesAreNotResolved(@TempDir Path tempDir) throws Exception {
+        Path secret = tempDir.resolve("secret.txt");
+        Files.write(secret, "SECRET".getBytes(StandardCharsets.UTF_8));
+
+        String content = "<?xml version='1.0'?>"
+                + "<!DOCTYPE x [<!ENTITY e SYSTEM '" + secret.toUri() + "'>]>"
+                + "<office:document-content"
+                + " xmlns:office='urn:oasis:names:tc:opendocument:xmlns:office:1.0'"
+                + " xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'"
+                + " xmlns:text='urn:oasis:names:tc:opendocument:xmlns:text:1.0'>"
+                + "<office:body><office:spreadsheet><table:table><table:table-row>"
+                + "<table:table-cell><text:p>&e;</text:p></table:table-cell>"
+                + "</table:table-row></table:table></office:spreadsheet></office:body></office:document-content>";
+
+        ByteArrayOutputStream zip = new ByteArrayOutputStream();
+        try (ZipOutputStream out = new ZipOutputStream(zip)) {
+            out.putNextEntry(new ZipEntry("content.xml"));
+            out.write(content.getBytes(StandardCharsets.UTF_8));
+            out.closeEntry();
+        }
+
+        String cellContent;
+        try {
+            final Document doc = new Document(new ByteArrayInputStream(zip.toByteArray()));
+            cellContent = doc.nextTable().nextRow().nextCell().getContent();
+        } catch (Exception e) {
+            // refusing to parse the document is fine, too
+            cellContent = String.valueOf(e.getMessage());
+        }
+        assertFalse(cellContent.contains("SECRET"), cellContent);
+    }
 
     @Test
     public void testEmptyTable() throws Exception {

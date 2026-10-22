@@ -1,12 +1,14 @@
 package de.zedlitz.opendocument;
 
+import javax.xml.stream.XMLStreamReader;
+
 /**
  * @author jzedlitz
  */
 public class EmptyCell extends Cell {
 
     EmptyCell(Row row, int columnIndex) {
-        super(null, row, columnIndex);
+        super((XMLStreamReader) null, row, columnIndex);
     }
 
     public String getContent() {

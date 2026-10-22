@@ -6,24 +6,29 @@ import java.util.NoSuchElementException;
 public class RowIterator implements Iterator<Row> {
     private final Table table;
     private Row next;
+    // The next row must not be fetched before the cells of the current row have been read,
+    // because fetching it moves the parser past the current row.
+    private boolean fetched = false;
 
     RowIterator(Table table) {
         this.table = table;
-        this.next = table.nextRow();
     }
 
     @Override
     public boolean hasNext() {
+        if (!fetched) {
+            next = table.nextRow();
+            fetched = true;
+        }
         return next != null;
     }
 
     @Override
     public Row next() {
-        if (next == null) {
+        if (!hasNext()) {
             throw new NoSuchElementException("No more rows available.");
         }
-        Row current = next;
-        next = table.nextRow();
-        return current;
+        fetched = false;
+        return next;
     }
 }

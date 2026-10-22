@@ -49,14 +49,14 @@ public class Document {
     }
 
     public Document(final ZipFile file) throws XMLStreamException, IOException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = createInputFactory();
         final ZipEntry content = file.getEntry("content.xml");
         this.xpp = factory.createXMLStreamReader(file.getInputStream(content));
     }
 
     public Document(final InputStream inputStream)
             throws XMLStreamException, IOException {
-        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        final XMLInputFactory factory = createInputFactory();
 
         final ZipInputStream zipInputStream = new ZipInputStream(inputStream);
 
@@ -76,6 +76,16 @@ public class Document {
 
     public Document(final XMLStreamReader parser) {
         this.xpp = parser;
+    }
+
+    /**
+     * Creates a factory that does not process DTDs and external entities to prevent XXE attacks.
+     */
+    private static XMLInputFactory createInputFactory() {
+        final XMLInputFactory factory = XMLInputFactory.newInstance();
+        factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+        factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+        return factory;
     }
 
     public final Table nextTable() {

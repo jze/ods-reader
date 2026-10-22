@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 public class Cell {
     protected final static String TYPE_UNDEFINED = "undefined";
     final static QName ELEMENT_CELL = new QName(Document.NS_TABLE, "table-cell");
+    final static QName ELEMENT_COVERED_CELL = new QName(Document.NS_TABLE, "covered-table-cell");
     private final static QName ELEMENT_ANNOTATION = new QName(Document.NS_OFFICE, "annotation");
     private final static QName ELEMENT_SPACE = new QName(Document.NS_TEXT, "s");
     private final static QName ELEMENT_PARAGRAPH = new QName(Document.NS_TEXT, "p");
@@ -73,11 +74,13 @@ public class Cell {
          */
         try {
             int eventType = parser.getEventType();
+            // either table-cell or covered-table-cell
+            final QName cellElement = parser.getName();
 
             int paragraphs = 0;
 
             while (!((eventType == XMLStreamConstants.END_ELEMENT) &&
-                    Cell.ELEMENT_CELL.equals(parser.getName()))) {
+                    cellElement.equals(parser.getName()))) {
 
                 if (eventType == XMLStreamConstants.START_ELEMENT) {
                     QName qName = parser.getName();
@@ -108,6 +111,22 @@ public class Cell {
         } catch (final XMLStreamException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Creates a copy of a cell for another position. Used to expand repeated cells and rows.
+     */
+    Cell(final Cell other, final Row row, final int columnIndex) {
+        this.row = row;
+        this.columnIndex = columnIndex;
+        this.valueType = other.getValueType();
+        this.dateValue = other.dateValue;
+        this.value = other.value;
+        this.booleanValue = other.booleanValue;
+        this.timeValue = other.timeValue;
+        this.currency = other.currency;
+        this.numberColumnsRepeated = other.getNumberColumnsRepeated();
+        this.content.append(other.getContent());
     }
 
     /**
@@ -276,12 +295,26 @@ public class Cell {
      * Check for <code>"time".equals(cell.getValueType())</code> before invoking this method.
      *
      * @return a {@link LocalTime} object with the value of the cell.
-     * @throws OdsReaderException is the cell is not a time cell
+     * @throws OdsReaderException is the cell is not a time cell or the value is not within 00:00 and 24:00
      */
     public LocalTime asTime() {
+        Duration duration = asDuration();
+        if (duration.isNegative() || duration.toDays() > 0) {
+            throw new OdsReaderException("Time value " + timeValue + " is not a time of day, use asDuration()");
+        }
+        return LocalTime.ofNanoOfDay(duration.toNanos());
+    }
+
+    /**
+     * Return a {@link Duration} object with the value of the cell. This works only for cells with the type "time".
+     * Unlike {@link #asTime()} this also works for values of 24 hours and more or negative values.
+     *
+     * @return a {@link Duration} object with the value of the cell.
+     * @throws OdsReaderException is the cell is not a time cell
+     */
+    public Duration asDuration() {
         if ("time".equals(valueType) && timeValue != null && !timeValue.isEmpty()) {
-            Duration duration = Duration.parse(timeValue);
-            return LocalTime.ofSecondOfDay(duration.getSeconds());
+            return Duration.parse(timeValue);
         }
 
         throw new OdsReaderException("Wrong cell type " + valueType + " for time value");

@@ -6,6 +6,7 @@ import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -78,11 +79,11 @@ public class RealworldTest {
 
         // third cell has content "A\nA\nA" (2 newlines)
         cell = row.nextCell();
-        assertSpacesAndNewLines(cell, 0,  2);
+        assertSpacesAndNewLines(cell, 0, 2);
 
         // third cell has content "A\n\nA" (2 newlines)
         cell = row.nextCell();
-        assertSpacesAndNewLines(cell, 0,  2);
+        assertSpacesAndNewLines(cell, 0, 2);
     }
 
     private int countOccurrences(String string, String search) {
@@ -109,8 +110,8 @@ public class RealworldTest {
             return false;
         }
 
-        for (int i = 0; i < search.length() && (index + i) < string.length() ; i++) {
-            if (string.charAt(index + i) !=  search.charAt(i)) return false;
+        for (int i = 0; i < search.length() && (index + i) < string.length(); i++) {
+            if (string.charAt(index + i) != search.charAt(i)) return false;
         }
 
         return true;
@@ -156,20 +157,30 @@ public class RealworldTest {
 
     @Test
     public void iterators() throws XMLStreamException, IOException {
+
+        List<String> expectedCellContent = Arrays.asList("A1", "b1", "c1", "d1", "e1", "f1",
+                "2", "b2", "", "", "e2", "",
+                "3", "4", "c3", "", "", "f3",
+                "", "b4", "", "", "", ""
+        );
+
         AtomicInteger numberOfRows = new AtomicInteger(0);
         AtomicInteger numberOfCells = new AtomicInteger(0);
 
         final Document doc = new Document(getClass().getResourceAsStream("/test01.ods"));
         Table table = doc.nextTable();
+        LinkedList<String> collectedCellContent = new LinkedList<>();
         for (Row row : table) {
             numberOfRows.incrementAndGet();
             for (Cell cell : row) {
                 numberOfCells.incrementAndGet();
+                collectedCellContent.add(cell.getLanguageIndependentContent());
             }
         }
 
         assertEquals(4, numberOfRows.get());
-        assertEquals(19, numberOfCells.get());
+        assertEquals(24, numberOfCells.get());
+        assertEquals(expectedCellContent, collectedCellContent);
     }
 
     @Test

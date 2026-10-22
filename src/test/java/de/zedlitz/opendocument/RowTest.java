@@ -5,7 +5,10 @@ import org.junit.jupiter.api.Test;
 import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -55,6 +58,18 @@ public class RowTest extends AbstractBaseTest {
                     "<table:table-cell table:formula=\"oooc:=1+2\" " +
                     "office:value-type=\"float\" office:value=\"3\"><text:p>3</text:p>" +
                     "</table:table-cell></table:table-row>";
+
+    /**
+     * Cell A1 is merged with B1, so B1 is a covered cell.
+     */
+    private static final String CONTENT_COVERED_CELL =
+            "<table:table-row" +
+                    " xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'" +
+                    " xmlns:text='urn:oasis:names:tc:opendocument:xmlns:text:1.0'>" +
+                    "<table:table-cell table:number-columns-spanned='2'><text:p>AB</text:p></table:table-cell>" +
+                    "<table:covered-table-cell/>" +
+                    "<table:table-cell><text:p>C</text:p></table:table-cell>" +
+                    "</table:table-row>";
 
     /**
      * One cell of the row contains a note.
@@ -175,6 +190,24 @@ public class RowTest extends AbstractBaseTest {
 
         assertNull(cell);
         assertTrue(errContent.toString().contains("XMLStreamException"));
+    }
+
+    @Test
+    void repeatedCellsHaveTheirOwnPosition() throws XMLStreamException {
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_MIXED)), 1);
+
+        List<String> addresses = new ArrayList<>();
+        row.eachCell(cell -> addresses.add(cell.getColumnIndex() + ":" + cell.getAddress()));
+        assertEquals(Arrays.asList("0:A1", "1:B1", "2:C1", "3:D1", "4:E1"), addresses);
+    }
+
+    @Test
+    void coveredCells() throws XMLStreamException {
+        final Row row = new Row(advanceToStartTag(createParser(CONTENT_COVERED_CELL)), 1);
+
+        List<String> addresses = new ArrayList<>();
+        row.eachCell(cell -> addresses.add(cell.getAddress() + "=" + cell.getContent()));
+        assertEquals(Arrays.asList("A1=AB", "B1=", "C1=C"), addresses);
     }
 
     @Test

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -33,6 +34,12 @@ public class CellTest extends AbstractBaseTest {
      */
     private static final String CONTENT_MISSING_BOOLEAN_VALUE =
             "<table:table-cell  office:value-type=\"boolean\" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
+
+    private static final String CONTENT_TIME_36_HOURS =
+            "<table:table-cell  office:value-type=\"time\" office:time-value=\"PT36H00M00S\" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
+
+    private static final String CONTENT_TIME_FRACTION =
+            "<table:table-cell  office:value-type=\"time\" office:time-value=\"PT08H35M12.5S\" xmlns:office=\"urn:oasis:names:tc:opendocument:xmlns:office:1.0\" xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'></table:table-cell>";
 
     private static final String BROKEN_XML_CONTENT =
             "<table:table-cell xmlns:table='urn:oasis:names:tc:opendocument:xmlns:table:1.0'><WRONG></table:table-cell>";
@@ -187,6 +194,19 @@ public class CellTest extends AbstractBaseTest {
         List<Cell> cells = getCellsFromDemoFile("/formats_german.ods");
         assertThrows(OdsReaderException.class, () -> cells.get(0).asTime());
         assertEquals(LocalTime.of(13, 37, 46), cells.get(26).asTime());
+    }
+
+    @Test
+    public void testAsTimeOutOfRange() throws Exception {
+        Cell cell = new Cell(advanceToStartTag(createParser(CONTENT_TIME_36_HOURS)), new DummyRow(), 0);
+        assertThrows(OdsReaderException.class, cell::asTime);
+        assertEquals(Duration.ofHours(36), cell.asDuration());
+    }
+
+    @Test
+    public void testAsTimeWithFraction() throws Exception {
+        Cell cell = new Cell(advanceToStartTag(createParser(CONTENT_TIME_FRACTION)), new DummyRow(), 0);
+        assertEquals(LocalTime.of(8, 35, 12, 500_000_000), cell.asTime());
     }
 
     @Test
