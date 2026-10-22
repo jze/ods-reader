@@ -263,6 +263,27 @@ public class DocumentTest extends AbstractBaseTest {
     }
 
     @Test
+    public void closeClosesOwnedZipFile() throws XMLStreamException, IOException {
+        File file = new File(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile());
+        final ZipFile zipFile;
+        try (Document doc = new Document(file)) {
+            assertNotNull(doc.nextTable());
+            zipFile = doc.ownedZipFile;
+        }
+        assertThrows(IllegalStateException.class, () -> zipFile.getEntry("content.xml"), "zip file closed");
+    }
+
+    @Test
+    public void closeDoesNotCloseZipFileOfCaller() throws XMLStreamException, IOException {
+        try (ZipFile zipFile = new ZipFile(Objects.requireNonNull(getClass().getResource("/test01.ods")).getFile())) {
+            try (Document doc = new Document(zipFile)) {
+                assertNotNull(doc.nextTable());
+            }
+            assertNotNull(zipFile.getEntry("content.xml"), "zip file still open");
+        }
+    }
+
+    @Test
     public void constructor_emptyZipFile() throws XMLStreamException, IOException {
          Document doc = new Document(getClass().getResourceAsStream("/empty.zip"));
     }

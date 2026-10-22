@@ -7,14 +7,15 @@ You want to import very large OpenDocument tables (ODS file) and worry about mem
 ## Usage
 Here is an example how to use the ods-reader:
 ```java
-  Document doc = new Document(new File("myTable.ods"));
-  Table table = doc.nextTable();
-  Row row = table.nextRow();
-  while( row != null ) {
-    Cell a = row.nextCell();
-    Cell b = row.nextCell();
-    System.out.println( a.getContent + "\t" + b.getContent );
-    row = table.nextRow();
+  try (Document doc = new Document(new File("myTable.ods"))) {
+    Table table = doc.nextTable();
+    Row row = table.nextRow();
+    while( row != null ) {
+      Cell a = row.nextCell();
+      Cell b = row.nextCell();
+      System.out.println( a.getContent() + "\t" + b.getContent() );
+      row = table.nextRow();
+    }
   }
 ```
 

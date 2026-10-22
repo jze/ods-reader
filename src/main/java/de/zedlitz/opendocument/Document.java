@@ -4,6 +4,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +18,13 @@ import java.util.zip.ZipInputStream;
 
 /**
  * An OpenDocument spreadsheet document.
+ * <p>
+ * Close the document after use, e.g. with try-with-resources. A {@link ZipFile} or {@link InputStream} passed to
+ * the constructor is not closed by {@link #close()} - this remains the responsibility of the caller.
  *
  * @author jzedlitz
  */
-public class Document {
+public class Document implements Closeable {
     /**
      * Namespace urn:oasis:names:tc:opendocument:xmlns:table:1.0
      */
@@ -35,23 +39,42 @@ public class Document {
 
     private final XMLStreamReader xpp;
 
+    // the ZipFile opened by this document, null if the caller is responsible for the source
+    final ZipFile ownedZipFile;
+
     public Document(final String filename)
             throws XMLStreamException, IOException {
-        this(new ZipFile(filename));
+        this(new ZipFile(filename), true);
     }
 
     public Document(final File file) throws XMLStreamException, IOException {
-        this(new ZipFile(file));
+        this(new ZipFile(file), true);
     }
 
     public Document(final Path path) throws XMLStreamException, IOException {
-        this(new ZipFile(path.toFile()));
+        this(new ZipFile(path.toFile()), true);
     }
 
     public Document(final ZipFile file) throws XMLStreamException, IOException {
-        final XMLInputFactory factory = createInputFactory();
-        final ZipEntry content = file.getEntry("content.xml");
-        this.xpp = factory.createXMLStreamReader(file.getInputStream(content));
+        this(file, false);
+    }
+
+    private Document(final ZipFile file, final boolean ownsZipFile) throws XMLStreamException, IOException {
+        try {
+            final XMLInputFactory factory = createInputFactory();
+            final ZipEntry content = file.getEntry("content.xml");
+            this.xpp = factory.createXMLStreamReader(file.getInputStream(content));
+        } catch (XMLStreamException | IOException | RuntimeException e) {
+            if (ownsZipFile) {
+                try {
+                    file.close();
+                } catch (IOException closeException) {
+                    e.addSuppressed(closeException);
+                }
+            }
+            throw e;
+        }
+        this.ownedZipFile = ownsZipFile ? file : null;
     }
 
     public Document(final InputStream inputStream)
@@ -72,10 +95,28 @@ public class Document {
         }
 
         this.xpp = factory.createXMLStreamReader(zipInputStream);
+        this.ownedZipFile = null;
     }
 
     public Document(final XMLStreamReader parser) {
         this.xpp = parser;
+        this.ownedZipFile = null;
+    }
+
+    /**
+     * Closes the parser and the file if it has been opened by this document.
+     */
+    @Override
+    public void close() throws IOException {
+        try {
+            xpp.close();
+        } catch (XMLStreamException e) {
+            throw new IOException(e);
+        } finally {
+            if (ownedZipFile != null) {
+                ownedZipFile.close();
+            }
+        }
     }
 
     /**
